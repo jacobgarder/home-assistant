@@ -1,0 +1,11 @@
+{
+  "domain": "trafikverket_ferry",
+  "name": "Trafikverket ferry information",
+  "documentation": "https://www.home-assistant.io/integrations/trafikverket_ferry",
+  "requirements": [
+    "pytrafikverket>=0.1.5.9"
+  ],
+  "dependencies": [],
+  "codeowners": [
+  ]
+}
