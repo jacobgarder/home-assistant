@@ -29,8 +29,8 @@ ATTR_DEPARTURE_STATE = "departure_state"
 ATTR_CANCELED = "canceled"
 ATTR_DEPARTURE_TIME = "departure_time"
 ATTR_OTHER_INFORMATION = "other_information"
-# ATTR_DEVIATIONS = "deviations"
-# ATTR_PLANNED_TIME = "planned_time"
+ATTR_DEVIATIONS = "deviations"
+ATTR_ROUTE = "route"
 # ATTR_ESTIMATED_TIME = "estimated_time"
 
 ICON = "mdi:ferry"
@@ -135,8 +135,8 @@ class FerrySensor(Entity):
             return None
         state = self._state
         other_information = None
-        # if state.other_information is not None:
-        #     other_information = ", ".join(state.other_information)
+        if state.other_information is not None:
+            other_information = ", ".join(state.other_information)
         # deviations = None
         # if state.deviations is not None:
         #     deviations = ", ".join(state.deviations)
