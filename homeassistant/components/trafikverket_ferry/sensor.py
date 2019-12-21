@@ -1,4 +1,4 @@
-"""Ferry information for departures and delays, provided by Trafikverket."""
+"""Ferry information for departures, provided by Trafikverket."""
 
 from datetime import date, datetime, timedelta
 import logging
@@ -30,7 +30,6 @@ ATTR_CANCELED = "canceled"
 ATTR_DEPARTURE_TIME = "departure_time"
 ATTR_OTHER_INFORMATION = "other_information"
 # ATTR_DEVIATIONS = "deviations"
-# ATTR_DELAY_TIME = "number_of_minutes_delayed"
 # ATTR_PLANNED_TIME = "planned_time"
 # ATTR_ESTIMATED_TIME = "estimated_time"
 
@@ -108,7 +107,6 @@ class FerrySensor(Entity):
         self._time = time
         self._state = None
         self._departure_state = None
-        self._delay_in_minutes = None
 
     async def async_update(self):
         """Retrieve latest state."""
@@ -130,8 +128,6 @@ class FerrySensor(Entity):
             )
         self._departure_state = self._state.get_state().name
 
-    #        self._delay_in_minutes = self._state.get_delay_time()
-
     @property
     def device_state_attributes(self):
         """Return the state attributes."""
@@ -144,12 +140,9 @@ class FerrySensor(Entity):
         # deviations = None
         # if state.deviations is not None:
         #     deviations = ", ".join(state.deviations)
-        #        # if self._delay_in_minutes is not None:
-        #        #     self._delay_in_minutes = self._delay_in_minutes.total_seconds() / 60
         return {
             ATTR_DEPARTURE_STATE: self._departure_state,
             # ATTR_CANCELED: state.canceled,
-            # ATTR_DELAY_TIME: self._delay_in_minutes,
             # ATTR_PLANNED_TIME: state.advertised_time_at_location,
             # ATTR_ESTIMATED_TIME: state.estimated_time_at_location,
             # ATTR_DEVIATIONS: deviations,
