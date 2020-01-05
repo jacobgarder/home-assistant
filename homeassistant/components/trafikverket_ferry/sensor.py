@@ -26,7 +26,6 @@ CONF_TO = "to"
 CONF_TIME = "time"
 
 ATTR_DEPARTURE_STATE = "departure_state"
-ATTR_CANCELED = "canceled"
 ATTR_DEPARTURE_TIME = "departure_time"
 ATTR_OTHER_INFORMATION = "other_information"
 ATTR_DEVIATIONS = "deviations"
@@ -107,25 +106,50 @@ class FerrySensor(Entity):
         self._time = time
         self._state = None
         self._departure_state = None
+        self.deviations = ""
+
+    # async def async_update(self):
+    #     """Retrieve latest state."""
+    #     if self._time is not None:
+    #         departure_day = next_departuredate(self._weekday)
+    #         when = datetime.combine(departure_day, self._time)
+    #         try:
+    #             self._state = await self._ferry_api.async_get_ferry_stop(
+    #                 self._from_station, self._to_station, when
+    #             )
+    #         except ValueError as output_error:
+    #             _LOGGER.error(
+    #                 "Departure %s encountered a problem: %s", when, output_error
+    #             )
+    #     else:
+    #         when = datetime.now()
+    #         self._state = await self._ferry_api.async_get_next_ferry_stop(
+    #             self._from_station, self._to_station, when
+    #         )
+    #     self._departure_state = self._state.get_state().name
 
     async def async_update(self):
         """Retrieve latest state."""
+        departure_day = next_departuredate(self._weekday)
         if self._time is not None:
-            departure_day = next_departuredate(self._weekday)
             when = datetime.combine(departure_day, self._time)
-            try:
-                self._state = await self._ferry_api.async_get_ferry_stop(
-                    self._from_station, self._to_station, when
-                )
-            except ValueError as output_error:
-                _LOGGER.error(
-                    "Departure %s encountered a problem: %s", when, output_error
-                )
         else:
             when = datetime.now()
+        try:
             self._state = await self._ferry_api.async_get_next_ferry_stop(
                 self._from_station, self._to_station, when
             )
+        except ValueError as output_error:
+            _LOGGER.error("Departure %s encountered a problem: %s", when, output_error)
+        if self._state.deviation_id is not None:
+            try:
+                deviation = await self._ferry_api.async_get_deviation(
+                    self._state.deviation_id
+                )
+                self.deviations = deviation.message
+            except ValueError as output_error:
+                _LOGGER.error("Deviation %s cased error: %s", when, output_error)
+
         self._departure_state = self._state.get_state().name
 
     @property
@@ -137,15 +161,14 @@ class FerrySensor(Entity):
         other_information = None
         if state.other_information is not None:
             other_information = ", ".join(state.other_information)
-        # deviations = None
-        # if state.deviations is not None:
-        #     deviations = ", ".join(state.deviations)
+        deviations = None
+        if self.deviations is not None:
+            deviations = ", ".join(state.deviations)
         return {
             ATTR_DEPARTURE_STATE: self._departure_state,
-            # ATTR_CANCELED: state.canceled,
             # ATTR_PLANNED_TIME: state.advertised_time_at_location,
             # ATTR_ESTIMATED_TIME: state.estimated_time_at_location,
-            # ATTR_DEVIATIONS: deviations,
+            ATTR_DEVIATIONS: deviations,
             ATTR_DEPARTURE_TIME: state.departure_time,
             ATTR_OTHER_INFORMATION: other_information,
         }
